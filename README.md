@@ -6,6 +6,8 @@ fileserve is an alternative for file:// that allows cors.
 It serves / if not told otherwise.
 
 > Do not use this as a webserver. It is not protected against path traversal and connections are never encrypted!
+> 
+> Also do not use while connected to a public network! Everyone in your local network can access your files!
 
 ### How to use?
 1. Download it (green "Code" button > Download ZIP, or clone it)
