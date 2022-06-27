@@ -1,7 +1,7 @@
 # fileserve
 
 ### What does it do?
-fileserver is an alternative for file:// that allows cors.
+fileserve is an alternative for file:// that allows cors.
 
 It serves / if not told otherwise.
 
