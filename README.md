@@ -5,6 +5,8 @@ fileserver is an alternative for file:// that allows cors.
 
 It serves / if not told otherwise.
 
+> Do not use this as a webserver. It is not protected against path traversal and connections are never encrypted!
+
 ### How to use?
 1. Download it (green "Code" button > Download ZIP, or clone it)
 2. Run it
