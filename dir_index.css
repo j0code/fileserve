@@ -1,0 +1,31 @@
+body {
+	background-color: #222222;
+	color: #e0e0e0;
+}
+
+a {
+	color: #e0e0e0;
+	text-decoration: none;
+}
+
+.code {
+	font-family: monospace;
+}
+
+.text-html {
+	color: lime;
+}
+
+table {
+	width: 100%;
+}
+
+thead {
+	font-weight: bold;
+}
+
+td, th {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
