@@ -17,7 +17,7 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 	}
 
 	let body = `<html><head><style>${css}</style></head><body>`
-	body += `<h1>${path}</h1><hr>`
+	body += `<h1>${generatePathTitle(path)}</h1><hr>`
 	body += "<table>"
 	body += `<thead></tr><th>Name</th><th>MIME</th><th>Size</th><th>Modified</th><th>Changed</th><th>Accessed</th><th>Created</th></tr></thead>`
 	body += "<tbody>"
@@ -100,4 +100,15 @@ function formatSize(size: number) {
 	}
 	
 	return Number(size.toFixed(2)) + " " + units[exp]
+}
+
+function generatePathTitle(path: string) {
+	const pathSegments = path.split("/")
+	pathSegments.shift() // remove leading empty segment
+	const segments = pathSegments.map((segment, index) => {
+		const segmentPath = "/" + pathSegments.slice(0, index + 1).join("/")
+		return `<a href="${segmentPath}">${segment}</a>`
+	})
+
+	return `<h1 id="path">/${segments.join("/")}</h1>`
 }

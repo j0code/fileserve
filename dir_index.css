@@ -8,6 +8,10 @@ a {
 	text-decoration: none;
 }
 
+#path a:hover {
+	text-decoration: underline;
+}
+
 .code {
 	font-family: monospace;
 }
