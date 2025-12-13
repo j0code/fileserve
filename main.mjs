@@ -14,9 +14,13 @@ if(path == "--help") {
 app.use(express.static(path, {
 	setHeaders: (res, path, stat) => {
 		res.set("Access-Control-Allow-Origin", "*")
+		res.set("Referrer-Policy", "same-origin")
+		res.set("Cache-Control", "no-cache")
+		res.set("X-Content-Type-Options", "nosniff")
 	}
 }))
 
+// directory view
 app.use(async (req, res) => {
 	let p = req.url
 	let files = []
@@ -55,6 +59,10 @@ app.use(async (req, res) => {
 	body += "</table>"
 	body += "</body></html>"
 	res.set("Content-Type", "text/html")
+	res.set("Access-Control-Allow-Origin", "*")
+	res.set("Referrer-Policy", "same-origin")
+	res.set("Cache-Control", "no-cache")
+	res.set("X-Content-Type-Options", "nosniff")
 	res.end(body)
 })
 
