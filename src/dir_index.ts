@@ -3,8 +3,12 @@ import type { Request, Response } from "express"
 import fs from "node:fs/promises"
 import { extname } from "node:path"
 import mime from "mime"
+import { formatSize, generatePathTitle, getProjectMeta } from "./util.js"
 
-const css = await fs.readFile("dir_index.css", { encoding: "utf-8"}).catch(() => "")
+const projectMeta = await getProjectMeta()
+
+const css    = await fs.readFile("dir_index.css", { encoding: "utf-8"}).catch(() => "")
+const footer = await generateFooter()
 
 export async function dirIndex(req: Request, res: Response, basePath: string) {
 	const path = req.url
@@ -17,8 +21,8 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 	}
 
 	let body = `<html><head><style>${css}</style></head><body>`
-	body += `<h1>${generatePathTitle(path)}</h1><hr>`
-	body += "<table>"
+	body += `<header>${generatePathTitle(path)}</header><hr>`
+	body += "<main><table>"
 	body += `<thead></tr><th>Name</th><th>MIME</th><th>Size</th><th>Modified</th><th>Changed</th><th>Accessed</th><th>Created</th></tr></thead>`
 	body += "<tbody>"
 	if(path != "/") body += `<tr><td><a href="${path + ".."}">../</a></td><td>(go up)</td></tr><tr></tr>`
@@ -81,7 +85,8 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 		body += "</tbody></tr>"
 	}
 
-	body += "</table>"
+	body += "</table></main><hr>"
+	body += footer
 	body += "</body></html>"
 	res.set("Content-Type", "text/html")
 	res.set("Access-Control-Allow-Origin", "*")
@@ -91,24 +96,23 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 	res.end(body)
 }
 
-function formatSize(size: number) {
-	const units = ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"]
-	let exp = 0
-	while (size >= 1024 && exp < units.length - 1) {
-		size /= 1024
-		exp++
-	}
+async function generateFooter() {
+	const { packageJson, commit } = projectMeta
+	const name     = packageJson.name     || "unknown"
+	const version  = packageJson.version  || "unknown"
+	const author   = packageJson.author   || "unknown"
+	const homepage = packageJson.homepage || "#"
+	const authorPage = `https://github.com/${author}`
+	const homepageURL = new URL(homepage)
+	const githubBase = homepageURL.origin + homepageURL.pathname
+	const commitURL  = `${githubBase}/commit/${commit}`
+
+	let footer = "<footer>"
 	
-	return Number(size.toFixed(2)) + " " + units[exp]
-}
+	footer += `<div id="project-info"><a href="${packageJson.homepage}">${name} v${version}</a></div>`
+	footer += `<div id="credits" title="♥ GPL-3.0-or-later licenced ♥">&lt;/&gt; with ♥ by <a href="${authorPage}">j0code</a></div>`
+	footer += `<div id="commit"><a href="${commitURL}">${commit}</a></div>`
 
-function generatePathTitle(path: string) {
-	const pathSegments = path.split("/")
-	pathSegments.shift() // remove leading empty segment
-	const segments = pathSegments.map((segment, index) => {
-		const segmentPath = "/" + pathSegments.slice(0, index + 1).join("/")
-		return `<a href="${segmentPath}">${segment}</a>`
-	})
-
-	return `<h1 id="path">/${segments.join("/")}</h1>`
+	footer += "</footer>"
+	return footer
 }

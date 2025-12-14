@@ -2,18 +2,35 @@
   "name": "fileserve",
   "version": "1.0.0",
   "description": "serves localhost files",
+  "keywords": [
+    "file",
+    "fileserve",
+    "serve",
+    "http",
+    "file-serve",
+    "directory"
+  ],
+  "homepage": "https://github.com/j0code/fileserve#readme",
+  "bugs": {
+    "url": "https://github.com/j0code/fileserve/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/j0code/fileserve.git"
+  },
+  "license": "GPL-3.0-or-later",
+  "author": "j0code",
+  "type": "module",
   "main": "./dist/main.js",
+  "types": "./dist/main.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-	"build": "tsc"
+    "build": "tsc"
   },
-  "author": "j0code",
-  "license": "ISC",
   "dependencies": {
     "express": "^5.2.1",
     "mime": "^4.1.0"
   },
-  "type": "module",
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.1",
