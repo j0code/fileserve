@@ -45,7 +45,7 @@ app.use(async (req, res) => {
 
 app.listen(port, (error) => {
 	if (error) {
-		if ("code" in error && error.code == "EAdCCES") {
+		if ("code" in error && error.code == "EACCES") {
 			console.error("Must be run as root to bind to port 80.")
 		} else {
 			printErrorInfo("Failed to start server:", error)
