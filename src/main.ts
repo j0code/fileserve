@@ -43,7 +43,16 @@ app.use(async (req, res) => {
 	res.status(500).end() // TODO: proper error handling for fifo pipes, sockets, etc.
 })
 
-app.listen(port, () => {
+app.listen(port, (error) => {
+	if (error) {
+		if ("code" in error && error.code == "EAdCCES") {
+			console.error("Must be run as root to bind to port 80.")
+		} else {
+			printErrorInfo("Failed to start server:", error)
+		}
+		return
+	}
+
 	console.log("Server running on port", port, "; path:", basePath)
 })
 
@@ -70,4 +79,9 @@ async function serveUnknownFile(path: string, res: Response) {
 	}
 
 	stream.pipe(res)
+}
+
+function printErrorInfo(message: string, error: Error) {
+	const errorInfo = { ...error }
+	console.error(message, error.message, errorInfo)
 }
