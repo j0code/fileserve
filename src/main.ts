@@ -2,6 +2,7 @@ import express, { type Response } from "express"
 import { dirIndex } from "./dir_index.js"
 import fs from "node:fs/promises"
 import { printErrorInfo } from "./util.js"
+import path from "node:path/posix"
 
 const app  = express()
 const port = 80
@@ -11,6 +12,19 @@ if(basePath == "--help") {
 	console.error("Syntax: node . <path>\npath - the path to serve as web root")
 	process.exit(0)
 }
+
+
+// Normalize path to prevent directory traversal attacks and ensure consistent behavior
+app.use((req, res, next) => {
+	const normalizedPath = path.normalize(req.url)
+
+	if (normalizedPath != req.url) {
+		res.redirect(301, normalizedPath)
+		return
+	}
+
+	next()
+})
 
 app.use(express.static(basePath, {
 	setHeaders: (res, path, stat) => {
@@ -23,7 +37,9 @@ app.use(express.static(basePath, {
 
 // directory view
 app.use(async (req, res) => {
-	const stats = await fs.stat(req.url).catch(() => null)
+	const fullPath = path.join(basePath, req.url)
+
+	const stats = await fs.stat(fullPath).catch(() => null)
 
 	if (!stats) {
 		res.status(404).end() // TODO: custom 404 page
@@ -32,11 +48,15 @@ app.use(async (req, res) => {
 
 	// express.static skips if file type is unknown, so we handle it here
 	if (stats.isFile()) {
-		serveUnknownFile(basePath + req.url, res)
+		serveUnknownFile(fullPath, res)
 		return
 	}
 
 	if (stats.isDirectory()) {
+		if (!fullPath.endsWith("/")) {
+			res.redirect(req.url + "/")
+			return
+		}
 		dirIndex(req, res, basePath)
 		return
 	}

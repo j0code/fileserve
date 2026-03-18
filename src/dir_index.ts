@@ -4,6 +4,7 @@ import fs from "node:fs/promises"
 import { extname } from "node:path"
 import mime from "mime"
 import { formatSize, generatePathTitle, getProjectMeta } from "./util.js"
+import { join } from "node:path/posix"
 
 const projectMeta = await getProjectMeta()
 
@@ -12,10 +13,11 @@ const footer = await generateFooter()
 
 export async function dirIndex(req: Request, res: Response, basePath: string) {
 	const path = req.url
+	const fullPath = join(basePath, req.url)
 	let entries: Dirent[] = []
 
 	try {
-		entries = await fs.readdir(basePath + path, { withFileTypes: true })
+		entries = await fs.readdir(fullPath, { withFileTypes: true })
 	} catch(e) {
 		entries = []
 	}
@@ -33,7 +35,8 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 		let targetPath: string
 		let type = ""
 		let className  = ""
-		const stats = await fs.stat(basePath + path + name).catch(() => null)
+		const entryPath = join(fullPath, name)
+		const stats = await fs.stat(entryPath).catch(() => null)
 
 		if (entry.isDirectory()) {
 			name += "/"
@@ -48,7 +51,7 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 			type = "socket"
 		} else if (entry.isSymbolicLink()) {
 			type = "symlink"
-			let resolved = await fs.readlink(basePath + path + name).catch(() => null)
+			let resolved = await fs.readlink(entryPath).catch(() => null)
 			if (stats?.isDirectory()) {
 				name += "/"
 				resolved += "/"
@@ -69,7 +72,7 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 			if(type.startsWith("application")) className += " code"
 		}
 
-		targetPath  ??= path + name
+		targetPath  ??= join(path, name)
 		displayName ??= name
 
 		body += `<tr><td><a href="${targetPath}" class="${className}">${displayName}</a></td><td>${type || ""}</td>`
