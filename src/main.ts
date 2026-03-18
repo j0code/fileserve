@@ -39,6 +39,10 @@ app.use(express.static(basePath, {
 // directory view
 app.use(async (req, res) => {
 	const fullPath = path.join(basePath, req.url)
+	if (!fullPath.startsWith(basePath)) { // should never happen due to normalization, but just in case
+		res.status(403).end() // prevent directory traversal attacks
+		return
+	}
 
 	const stats = await fs.stat(fullPath).catch(() => null)
 
