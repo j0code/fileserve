@@ -1,4 +1,8 @@
 import fs from "node:fs/promises"
+import { exec } from "node:child_process"
+import { promisify } from "node:util"
+
+const execAsync = promisify(exec)
 
 export function formatSize(size: number) {
 	const units = ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"]
@@ -25,16 +29,22 @@ export function generatePathTitle(path: string) {
 export async function getProjectMeta() {
 	const packageJsonRaw = await fs.readFile("package.json", "utf-8").catch(() => "{}")
 	const packageJson = JSON.parse(packageJsonRaw)
-
-	// NOTE: This assumes a standard git setup; may not work in all cases
-	const commit = await fs.readFile(".git/HEAD", "utf-8").then(async ref => {
-		if (ref.startsWith("ref: ")) {
-			const refPath = ".git/" + ref.substring(5).trim()
-			return fs.readFile(refPath, "utf-8").then(hash => hash.trim()).catch(() => null)
-		} else {
-			return ref.trim()
-		}
-	}).catch(() => null) ?? "unknown"
+	const commit = await getLastCommitHash()
 
 	return { packageJson, commit }
+}
+
+async function getLastCommitHash(): Promise<string> {
+  try {
+    const { stdout } = await execAsync("git rev-parse HEAD")
+    return stdout.trim()
+  } catch (error) {
+    console.error("Error retrieving the current git commit hash:", error)
+    process.exit(1)
+  }
+}
+
+export function printErrorInfo(message: string, error: Error) {
+	const errorInfo = { ...error }
+	console.error(message, error.message, errorInfo)
 }

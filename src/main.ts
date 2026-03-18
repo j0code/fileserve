@@ -1,6 +1,7 @@
 import express, { type Response } from "express"
 import { dirIndex } from "./dir_index.js"
 import fs from "node:fs/promises"
+import { printErrorInfo } from "./util.js"
 
 const app  = express()
 const port = 80
@@ -79,9 +80,4 @@ async function serveUnknownFile(path: string, res: Response) {
 	}
 
 	stream.pipe(res)
-}
-
-function printErrorInfo(message: string, error: Error) {
-	const errorInfo = { ...error }
-	console.error(message, error.message, errorInfo)
 }

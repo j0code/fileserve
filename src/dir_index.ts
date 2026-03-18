@@ -106,12 +106,13 @@ async function generateFooter() {
 	const homepageURL = new URL(homepage)
 	const githubBase = homepageURL.origin + homepageURL.pathname
 	const commitURL  = `${githubBase}/commit/${commit}`
+	const commitShort = commit.substring(0, 8)
 
 	let footer = "<footer>"
 	
-	footer += `<div id="project-info"><a href="${packageJson.homepage}">${name} v${version}</a></div>`
-	footer += `<div id="credits" title="♥ GPL-3.0-or-later licenced ♥">&lt;/&gt; with ♥ by <a href="${authorPage}">j0code</a></div>`
-	footer += `<div id="commit"><a href="${commitURL}">${commit}</a></div>`
+	footer += `<div id="project-info" title="♥ GPL-3.0-or-later licenced ♥"><a href="${packageJson.homepage}">${name} v${version}</a></div>`
+	footer += `<div id="credits"><code>&lt;/&gt;</code> with ♥ by <a href="${authorPage}">j0code</a></div>`
+	footer += `<div id="commit"><a href="${commitURL}">commit: ${commitShort}</a></div>`
 
 	footer += "</footer>"
 	return footer
