@@ -16,7 +16,8 @@ if(basePath == "--help") {
 
 // Normalize path to prevent directory traversal attacks and ensure consistent behavior
 app.use((req, res, next) => {
-	const normalizedPath = path.normalize(req.url)
+	const reqUrl = encodeURI(decodeURIComponent(req.url)) // clean up over-encoding (e.g. %2F -> /)
+	const normalizedPath = path.normalize(reqUrl)
 
 	if (normalizedPath != req.url) {
 		res.redirect(301, normalizedPath)

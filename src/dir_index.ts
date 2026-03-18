@@ -1,10 +1,9 @@
 import type { Dirent } from "node:fs"
 import type { Request, Response } from "express"
 import fs from "node:fs/promises"
-import { extname } from "node:path"
+import { extname, join } from "node:path/posix"
 import mime from "mime"
-import { formatSize, generatePathTitle, getProjectMeta } from "./util.js"
-import { join } from "node:path/posix"
+import { sanitizeHtml, sanitizeURL, formatSize, generatePathTitle, getProjectMeta } from "./util.js"
 
 const projectMeta = await getProjectMeta()
 
@@ -27,7 +26,7 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 	body += "<main><table>"
 	body += `<thead></tr><th>Name</th><th>MIME</th><th>Size</th><th>Modified</th><th>Changed</th><th>Accessed</th><th>Created</th></tr></thead>`
 	body += "<tbody>"
-	if(path != "/") body += `<tr><td><a href="${path + ".."}">../</a></td><td>(go up)</td></tr><tr></tr>`
+	if(path != "/") body += `<tr><td><a href="${sanitizeURL(path + "..")}">../</a></td><td>(go up)</td></tr><tr></tr>`
 
 	for(let entry of entries) {
 		let name = entry.name
@@ -75,7 +74,7 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 		targetPath  ??= join(path, name)
 		displayName ??= name
 
-		body += `<tr><td><a href="${targetPath}" class="${className}">${displayName}</a></td><td>${type || ""}</td>`
+		body += `<tr><td><a href="${sanitizeURL(targetPath)}" class="${sanitizeHtml(className)}">${sanitizeHtml(displayName)}</a></td><td>${sanitizeHtml(type || "")}</td>`
 		if (stats && entry.isFile()) {
 			body += `<td>${formatSize(stats.size)}</td>`
 		} else {
@@ -113,9 +112,9 @@ async function generateFooter() {
 
 	let footer = "<footer>"
 	
-	footer += `<div id="project-info" title="♥ GPL-3.0-or-later licenced ♥"><a href="${packageJson.homepage}">${name} v${version}</a></div>`
-	footer += `<div id="credits"><code>&lt;/&gt;</code> with ♥ by <a href="${authorPage}">j0code</a></div>`
-	footer += `<div id="commit"><a href="${commitURL}">commit: ${commitShort}</a></div>`
+	footer += `<div id="project-info" title="♥ GPL-3.0-or-later licenced ♥"><a href="${sanitizeURL(packageJson.homepage)}">${sanitizeHtml(name)} v${sanitizeHtml(version)}</a></div>`
+	footer += `<div id="credits"><code>&lt;/&gt;</code> with ♥ by <a href="${sanitizeURL(authorPage)}">j0code</a></div>`
+	footer += `<div id="commit"><a href="${sanitizeURL(commitURL)}">commit: ${sanitizeHtml(commitShort)}</a></div>`
 
 	footer += "</footer>"
 	return footer

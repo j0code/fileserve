@@ -20,7 +20,7 @@ export function generatePathTitle(path: string) {
 	pathSegments.shift() // remove leading empty segment
 	const segments = pathSegments.map((segment, index) => {
 		const segmentPath = "/" + pathSegments.slice(0, index + 1).join("/")
-		return `<a href="${segmentPath}">${segment}</a>`
+		return `<a href="${sanitizeURL(segmentPath)}">${sanitizeHtml(segment)}</a>`
 	})
 
 	return `<h1 id="path">/${segments.join("/")}</h1>`
@@ -47,4 +47,16 @@ async function getLastCommitHash(): Promise<string> {
 export function printErrorInfo(message: string, error: Error) {
 	const errorInfo = { ...error }
 	console.error(message, error.message, errorInfo)
+}
+
+export function sanitizeHtml(text: string) {
+	return text.replace(/&/g, "&amp;")
+			   .replace(/</g, "&lt;")
+			   .replace(/>/g, "&gt;")
+			   .replace(/"/g, "&quot;")
+			   .replace(/'/g, "&#039;")
+}
+
+export function sanitizeURL(text: string) {
+	return sanitizeHtml(encodeURI(text))
 }
