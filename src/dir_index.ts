@@ -7,7 +7,8 @@ import { sanitizeHtml, sanitizeURL, formatSize, generatePathTitle, getProjectMet
 
 const projectMeta = await getProjectMeta()
 
-const css    = await fs.readFile("dir_index.css", { encoding: "utf-8"}).catch(() => "")
+const css    = await fs.readFile("dir_index.css",    { encoding: "utf-8"}).catch(() => "")
+const js	 = await fs.readFile("dist/frontend.js", { encoding: "utf-8"}).catch(() => "")
 const footer = await generateFooter()
 
 export async function dirIndex(req: Request, res: Response, basePath: string) {
@@ -21,9 +22,9 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 		entries = []
 	}
 
-	let body = `<html><head><style>${css}</style></head><body>`
+	let body = `<html><head><style>${css}</style><script type="module">${js}</script></head><body>`
 	body += `<header>${generatePathTitle(path)}</header><hr>`
-	body += "<main><table>"
+	body += `<main><table id="dir-index">`
 	body += `<thead></tr><th>Name</th><th>MIME</th><th>Size</th><th>Modified</th><th>Changed</th><th>Accessed</th><th>Created</th></tr></thead>`
 	body += "<tbody>"
 	if(path != "/") body += `<tr><td><a href="${sanitizeURL(path + "..")}">../</a></td><td>(go up)</td></tr><tr></tr>`
@@ -84,10 +85,10 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 		body += `<td>${stats?.ctime.toISOString().replace("T", " ").substring(0, 19) ?? ""}</td>`
 		body += `<td>${stats?.atime.toISOString().replace("T", " ").substring(0, 19) ?? ""}</td>`
 		body += `<td>${stats?.birthtime.toISOString().replace("T", " ").substring(0, 19) ?? ""}</td>`
-		body += "</tbody></tr>"
+		body += "</tr>"
 	}
 
-	body += "</table></main><hr>"
+	body += "</tbody></table></main><hr>"
 	body += footer
 	body += "</body></html>"
 	res.set("Content-Type", "text/html")

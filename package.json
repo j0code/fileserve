@@ -8,7 +8,8 @@
     "serve",
     "http",
     "file-serve",
-    "directory"
+    "directory",
+    "directory-index"
   ],
   "homepage": "https://github.com/j0code/fileserve#readme",
   "bugs": {
@@ -29,11 +30,12 @@
   },
   "dependencies": {
     "express": "^5.2.1",
-    "mime": "^4.1.0"
+    "mime": "^4.1.0",
+    "temporal-spec": "^0.3.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/node": "^25.0.1",
+    "@types/node": "^25.5.0",
     "typescript": "^5.9.3"
   }
 }

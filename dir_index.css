@@ -1,6 +1,12 @@
+:root {
+	--bg-color: #222222;
+	--text-color: #e0e0e0;
+	color-scheme: dark;
+}
+
 body {
-	background-color: #222222;
-	color: #e0e0e0;
+	background-color: var(--bg-color);
+	color: var(--text-color);
 	display: flex;
 	flex-direction: column;
 	height: 100vh;
@@ -11,7 +17,11 @@ body {
 }
 
 main {
+	display: flex;
+	flex-direction: column;
 	flex: 1 1 auto;
+	overflow-y: auto;
+	scrollbar-gutter: stable;
 }
 
 #path {
@@ -23,7 +33,7 @@ hr {
 }
 
 a {
-	color: #e0e0e0;
+	color: var(--text-color);
 	text-decoration: none;
 }
 
@@ -42,10 +52,17 @@ footer a:hover {
 
 table {
 	width: 100%;
+	border-collapse: collapse;
+	border-spacing: 0px;
 }
 
 thead {
 	font-weight: bold;
+	position: sticky;
+	top: 0;
+	background: var(--bg-color);
+	z-index: 1;
+	height: 2em;
 }
 
 td, th {
