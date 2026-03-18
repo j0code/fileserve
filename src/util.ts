@@ -39,7 +39,9 @@ async function getLastCommitHash(): Promise<string> {
     const { stdout } = await execAsync("git rev-parse HEAD")
     return stdout.trim()
   } catch (error) {
-    console.error("Error retrieving the current git commit hash:", error)
+    printErrorInfo("Error retrieving the current git commit hash:", error as Error)
+	console.log("Git must be installed, in PATH, and the current directory must be a valid git repository.")
+	console.log("Try: `which git`, `ls -a`")
     process.exit(1)
   }
 }
