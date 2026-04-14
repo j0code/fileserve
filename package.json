@@ -29,6 +29,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@j0code/yson": "npm:@jsr/j0code__yson@^1.2.4",
     "express": "^5.2.1",
     "mime": "^4.1.0",
     "temporal-spec": "^0.3.1"

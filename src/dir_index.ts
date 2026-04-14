@@ -3,7 +3,8 @@ import type { Request, Response } from "express"
 import fs from "node:fs/promises"
 import { extname, join } from "node:path/posix"
 import mime from "mime"
-import { sanitizeHtml, sanitizeURL, formatSize, generatePathTitle, getProjectMeta } from "./util.js"
+import { sanitizeHtml, sanitizeURL, formatSize, generatePathTitle, getProjectMeta, isInDenylist, isDotFile, isInAllowlist } from "./util.js"
+import config from "./config.js"
 
 const projectMeta = await getProjectMeta()
 
@@ -21,6 +22,25 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 	} catch(e) {
 		entries = []
 	}
+
+	// filter out entries in the deny list, and hidden files if exposeHidden is false
+	entries = entries.filter(entry => {
+		const entryPath = join(fullPath, entry.name)
+
+		if (isInDenylist(entryPath)) {
+			return false
+		}
+
+		if (!isInAllowlist(entryPath)) {
+			return false
+		}
+
+		if (!config.exposeHidden && isDotFile(entry.name)) {
+			return false
+		}
+
+		return true
+	})
 
 	let body = `<html><head><style>${css}</style><script type="module">${js}</script></head><body>`
 	body += `<header>${generatePathTitle(path)}</header><hr>`
