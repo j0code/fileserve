@@ -1,6 +1,7 @@
 import type { Config, Port } from "./types.js";
 
 export default {
+	basePath: "/",
 	port: 80 as Port,
 	exposeIndex: true,
 	exposeHidden: true,

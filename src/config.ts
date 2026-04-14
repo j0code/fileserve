@@ -1,7 +1,7 @@
 import YSON from "@j0code/yson"
-import { checkBoolean, checkPort, checkStringArray, type Config } from "./types.js"
+import { checkBoolean, checkPort, checkString, checkStringArray, type Config } from "./types.js"
 import defaultConfig from "./defaultConfig.js"
-import { normalizePath } from "./util.js"
+import { normalizeAccesslistEntry, normalizePath } from "./util.js"
 
 const configFile = await(async () => {
 	try {
@@ -21,6 +21,9 @@ if (typeof configFile != "object" || configFile == null || Array.isArray(configF
 	process.exit(1)
 }
 
+const basePath = process.argv[2] ?? configFile.basePath ?? defaultConfig.basePath
+checkString(basePath, "basePath")
+
 const port = Number(configFile.port ?? defaultConfig.port)
 checkPort(port, "port")
 
@@ -37,6 +40,7 @@ const allowlist = configFile.allowlist ?? defaultConfig.allowlist
 checkStringArray(allowlist, "allowlist", true)
 
 const config = {
+	basePath: normalizePath(basePath),
 	port,
 	exposeIndex,
 	exposeHidden,
@@ -47,7 +51,7 @@ const config = {
 export default config
 
 function normalizePaths(paths: string[]) {
-	return paths.map(path => normalizePath(path))
+	return paths.map(path => normalizeAccesslistEntry(path, basePath as string))
 }
 
 console.log("Config loaded:", config)

@@ -5,11 +5,19 @@ export type Port = number & {
 }
 
 export interface Config {
+	readonly basePath: string
 	readonly port: Port
 	readonly exposeIndex: boolean
 	readonly exposeHidden: boolean
 	readonly denylist: string[]
 	readonly allowlist: string[] | null
+}
+
+export function checkString(value: unknown, key: string): asserts value is string {
+	if (typeof value != "string") {
+		console.error(`Invalid ${key} in config file: must be a string`)
+		process.exit(1)
+	}
 }
 
 export function checkPort(value: number, key: string): asserts value is Port {

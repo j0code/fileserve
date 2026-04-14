@@ -1,7 +1,7 @@
 import fs from "node:fs/promises"
 import { exec } from "node:child_process"
 import { promisify } from "node:util"
-import { basename, normalize } from "node:path/posix"
+import { basename, join, normalize } from "node:path/posix"
 import config from "./config.js"
 
 const execAsync = promisify(exec)
@@ -89,6 +89,8 @@ function accesslistEntryToRegex(entry: string, strict: boolean): RegExp {
 }
 
 export function isInDenylist(path: string) {
+	path = normalizePath(path)
+
 	return config.denylist.some(entry => {
 		if (!entry.includes("*")) {
 			return path.startsWith(entry)
@@ -99,10 +101,10 @@ export function isInDenylist(path: string) {
 }
 
 export function isInAllowlist(path: string) {
-	if (config.allowlist == null) return true // if allowlist is null, allow everything not in denylist
-	if (path == "/") return true // always allow root path
-
 	path = normalizePath(path)
+
+	if (config.allowlist == null) return path.startsWith(config.basePath) // if allowlist is null, allow everything not in denylist and under basePath
+	if (path == config.basePath) return true // always allow basePath
 
 	return config.allowlist.some(entry => {
 		if (!entry.includes("*")) {
@@ -116,6 +118,8 @@ export function isInAllowlist(path: string) {
 // normalize path with node:path and ensure it starts with "/" and does not end with "/"
 export function normalizePath(path: string) {
 	path = normalize(path)
+
+	if (path == "/") return path
 	
 	if (!path.startsWith("/")) {
 		path = "/" + path
@@ -126,4 +130,13 @@ export function normalizePath(path: string) {
 	}
 
 	return path
+}
+
+export function normalizeAccesslistEntry(entry: string, basePath: string) {
+	if (entry.startsWith("^")) { // path relative to basePath
+		const normalized = normalize(entry.slice(1))
+		entry = join(basePath, normalized)
+	}
+
+	return normalize(entry)
 }

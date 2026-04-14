@@ -6,9 +6,8 @@ import path from "node:path/posix"
 import config from "./config.js"
 
 const app  = express()
-const basePath = process.argv[2] || "/"
 
-if(basePath == "--help") {
+if(process.argv[2] == "--help") {
 	console.error("Syntax: node . <path>\npath - the path to serve as web root")
 	process.exit(0)
 }
@@ -28,7 +27,7 @@ app.use((req, res, next) => {
 })
 
 app.use((req, res, next) => {
-	const fullPath = path.join(basePath, req.url)
+	const fullPath = path.join(config.basePath, req.url)
 
 	if (isInDenylist(fullPath)) {
 		res.status(403).end()
@@ -48,7 +47,7 @@ app.use((req, res, next) => {
 	next()
 })
 
-app.use(express.static(basePath, {
+app.use(express.static(config.basePath, {
 	setHeaders: (res, path, stat) => {
 		res.set("Access-Control-Allow-Origin", "*")
 		res.set("Referrer-Policy", "same-origin")
@@ -59,8 +58,8 @@ app.use(express.static(basePath, {
 
 // directory view
 app.use(async (req, res) => {
-	const fullPath = path.join(basePath, req.url)
-	if (!fullPath.startsWith(basePath)) { // should never happen due to normalization, but just in case
+	const fullPath = path.join(config.basePath, req.url)
+	if (!fullPath.startsWith(config.basePath)) { // should never happen due to normalization, but just in case
 		res.status(403).end() // prevent directory traversal attacks
 		return
 	}
@@ -84,7 +83,7 @@ app.use(async (req, res) => {
 			return
 		}
 		if (config.exposeIndex) {
-			dirIndex(req, res, basePath)
+			dirIndex(req, res, config.basePath)
 		} else {
 			res.status(404).end() // TODO: custom 404 page
 		}
@@ -104,7 +103,7 @@ app.listen(config.port, (error) => {
 		return
 	}
 
-	console.log("Server running on port", config.port, "; path:", basePath)
+	console.info("Server running on port", config.port, "; path:", config.basePath)
 })
 
 async function serveUnknownFile(path: string, res: Response) {
