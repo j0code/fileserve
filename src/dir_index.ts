@@ -42,9 +42,13 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 		let targetPath: string
 		let type = ""
 		let className  = ""
-		let targetAllowed = true
+		let disabled = false
 		const entryPath = join(fullPath, name)
 		const stats = await fs.stat(entryPath).catch(() => null)
+
+		if (!stats) {
+			disabled = true
+		}
 
 		if (entry.isDirectory()) {
 			name += "/"
@@ -85,7 +89,7 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 
 				if (!allowed) {
 					displayName = sanitizeHtml(`${name} -> `) + "<em>unavailable</em>"
-					targetAllowed = false
+					disabled = true
 				}
 			}
 		} else if (extname(name)) {
@@ -99,14 +103,14 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 			className = type.replaceAll("/", "-")
 			if(type.startsWith("application")) className += " code"
 		}
-		if (!targetAllowed) {
+		if (disabled) {
 			className += " disabled"
 		}
 
 		targetPath  ??= join(path, name)
 		displayName ??= sanitizeHtml(name)
 
-		body += `<tr><td><a href="${targetAllowed ? sanitizeURL(targetPath) : ""}" class="${sanitizeHtml(className)}">${displayName}</a></td><td>${sanitizeHtml(type || "")}</td>`
+		body += `<tr><td><a href="${disabled ? sanitizeURL(targetPath) : ""}" class="${sanitizeHtml(className)}">${displayName}</a></td><td>${sanitizeHtml(type || "")}</td>`
 		if (stats && entry.isFile()) {
 			body += `<td>${formatSize(stats.size)}</td>`
 		} else {

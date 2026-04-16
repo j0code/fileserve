@@ -15,10 +15,10 @@ const now = Temporal.Now.instant()
 for (let row of tbody.rows) {
 	if (row.cells.length < 7) continue
 
-	const modifiedDateStr  = row.cells[3]!.textContent + "Z"
-	const changedDateStr   = row.cells[4]!.textContent + "Z"
-	const accessedDateStr  = row.cells[5]!.textContent + "Z"
-	const createdDateStr   = row.cells[6]!.textContent + "Z"
+	const modifiedDateStr  = row.cells[3]!.textContent ? (row.cells[3]!.textContent + "Z") : ""
+	const changedDateStr   = row.cells[4]!.textContent ? (row.cells[4]!.textContent + "Z") : ""
+	const accessedDateStr  = row.cells[5]!.textContent ? (row.cells[5]!.textContent + "Z") : ""
+	const createdDateStr   = row.cells[6]!.textContent ? (row.cells[6]!.textContent + "Z") : ""
 
 	const modifiedDate  = modifiedDateStr ? Temporal.Instant.from(modifiedDateStr) : ""
 	const changedDate   = changedDateStr  ? Temporal.Instant.from(changedDateStr)  : ""
