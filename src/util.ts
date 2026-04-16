@@ -140,3 +140,19 @@ export function normalizeAccesslistEntry(entry: string, basePath: string) {
 
 	return normalize(entry)
 }
+
+export function isPathAllowed(path: string): boolean {
+	if (isInDenylist(path)) {
+		return false
+	}
+
+	if (!isInAllowlist(path)) {
+		return false
+	}
+
+	if (!config.exposeHidden && isDotFile(path)) {
+		return false
+	}
+
+	return true
+}

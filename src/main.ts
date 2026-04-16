@@ -1,7 +1,7 @@
 import express, { type Response } from "express"
 import { dirIndex } from "./dir_index.js"
 import fs from "node:fs/promises"
-import { isDotFile, isInAllowlist, isInDenylist, printErrorInfo } from "./util.js"
+import { isPathAllowed, printErrorInfo } from "./util.js"
 import path from "node:path/posix"
 import config from "./config.js"
 
@@ -29,18 +29,8 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
 	const fullPath = path.join(config.basePath, req.url)
 
-	if (isInDenylist(fullPath)) {
-		res.status(403).end()
-		return
-	}
-
-	if (!isInAllowlist(fullPath)) {
-		res.status(403).end()
-		return
-	}
-
-	if (!config.exposeHidden && isDotFile(fullPath)) {
-		res.status(404).end() // pretend it doesn't exist
+	if (!isPathAllowed(fullPath)) {
+		res.status(404).end()// pretend it doesn't exist
 		return
 	}
 

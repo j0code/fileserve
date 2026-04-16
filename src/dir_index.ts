@@ -3,8 +3,7 @@ import type { Request, Response } from "express"
 import fs from "node:fs/promises"
 import { extname, join } from "node:path/posix"
 import mime from "mime"
-import { sanitizeHtml, sanitizeURL, formatSize, generatePathTitle, getProjectMeta, isInDenylist, isDotFile, isInAllowlist } from "./util.js"
-import config from "./config.js"
+import { sanitizeHtml, sanitizeURL, formatSize, generatePathTitle, getProjectMeta, isPathAllowed } from "./util.js"
 
 const projectMeta = await getProjectMeta()
 
@@ -27,19 +26,7 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 	entries = entries.filter(entry => {
 		const entryPath = join(fullPath, entry.name)
 
-		if (isInDenylist(entryPath)) {
-			return false
-		}
-
-		if (!isInAllowlist(entryPath)) {
-			return false
-		}
-
-		if (!config.exposeHidden && isDotFile(entry.name)) {
-			return false
-		}
-
-		return true
+		return isPathAllowed(entryPath)
 	})
 
 	let body = `<html><head><style>${css}</style><script type="module">${js}</script></head><body>`
@@ -49,12 +36,13 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 	body += "<tbody>"
 	if(path != "/") body += `<tr><td><a href="${sanitizeURL(path + "..")}">../</a></td><td>(go up)</td></tr><tr></tr>`
 
-	for(let entry of entries) {
+	for (let entry of entries) {
 		let name = entry.name
 		let displayName: string
 		let targetPath: string
 		let type = ""
 		let className  = ""
+		let targetAllowed = true
 		const entryPath = join(fullPath, name)
 		const stats = await fs.stat(entryPath).catch(() => null)
 
@@ -72,13 +60,33 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 		} else if (entry.isSymbolicLink()) {
 			type = "symlink"
 			let resolved = await fs.readlink(entryPath).catch(() => null)
+
 			if (stats?.isDirectory()) {
 				name += "/"
 				resolved += "/"
 			}
+
 			if (resolved) {
-				displayName = `${name} -> ${resolved}`
-				targetPath = resolved
+				let allowed = false
+				if (resolved.startsWith(basePath)) {
+					allowed = isPathAllowed(resolved)
+					if (allowed) {
+						const relativePath = resolved.slice(basePath.length - 1) // keep the leading "/"
+						displayName = sanitizeHtml(`${name} -> ${relativePath}`)
+						targetPath = relativePath
+					}
+				} else if (resolved.startsWith("./")) {
+					allowed = isPathAllowed(join(fullPath, resolved))
+					if (allowed) {
+						displayName = sanitizeHtml(`${name} -> ${resolved}`)
+						targetPath = resolved
+					}
+				}
+
+				if (!allowed) {
+					displayName = sanitizeHtml(`${name} -> `) + "<em>unavailable</em>"
+					targetAllowed = false
+				}
 			}
 		} else if (extname(name)) {
 			const ext = name.split(".").pop()!
@@ -91,11 +99,14 @@ export async function dirIndex(req: Request, res: Response, basePath: string) {
 			className = type.replaceAll("/", "-")
 			if(type.startsWith("application")) className += " code"
 		}
+		if (!targetAllowed) {
+			className += " disabled"
+		}
 
 		targetPath  ??= join(path, name)
-		displayName ??= name
+		displayName ??= sanitizeHtml(name)
 
-		body += `<tr><td><a href="${sanitizeURL(targetPath)}" class="${sanitizeHtml(className)}">${sanitizeHtml(displayName)}</a></td><td>${sanitizeHtml(type || "")}</td>`
+		body += `<tr><td><a href="${targetAllowed ? sanitizeURL(targetPath) : ""}" class="${sanitizeHtml(className)}">${displayName}</a></td><td>${sanitizeHtml(type || "")}</td>`
 		if (stats && entry.isFile()) {
 			body += `<td>${formatSize(stats.size)}</td>`
 		} else {

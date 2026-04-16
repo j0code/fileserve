@@ -1,6 +1,7 @@
 :root {
 	--bg-color: #222222;
 	--text-color: #e0e0e0;
+	--disabled-text-color: #808080;
 	color-scheme: dark;
 }
 
@@ -87,4 +88,8 @@ footer {
 
 #commit {
 	text-align: right;
+}
+
+.disabled {
+	color: var(--disabled-text-color);
 }
